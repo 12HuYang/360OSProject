@@ -1,0 +1,53 @@
+void _mv(char *_src, char *_dest)
+{
+  int ino = 0, ino2 = 0;
+  char src[1024];
+  char dest[1024];
+  char* parent;
+  int dev,dev2;
+  MINODE *mip,*dip;
+  INODE* ip; 
+  //Check to make sure there is a sorce and dest defined
+  //Strcpy to src and dest so we dont lose them
+  if (!strcmp(_src, ""))
+    {
+      printf("Invalid source\n");
+      return;
+    }
+  strcpy(src, _src);
+  if (!strcmp(_dest, ""))
+    {
+      printf("Invalid dest\n");
+      return;
+    }
+  strcpy(dest, _dest);
+
+  //Verify that src exists and get its ino
+  //Returns out if the src does not exist
+  dev2=running->cwd->dev;
+  parent=dirname(strdup(dest));
+  ino2 = getino(&dev2,parent);
+  dip=iget(&dev2,ino2);
+  dev=running->cwd->dev;
+  ino=getino(&dev,_src);
+  mip=iget(&dev,ino);
+  ip=&mip->INODE;
+  if(ino == 0 || ino2==0)
+    {
+      return;
+    }
+  
+  //strcpy(_dest, dest);
+  if(dip->dev==mip->dev)
+  {
+    while(0<ip->i_links_count)
+    {
+      link(dest,src);
+      _unlink(src);
+      ip->i_links_count--;
+    }
+  }
+  _cp(src, dest);
+  _unlink(src);
+  return;
+}
